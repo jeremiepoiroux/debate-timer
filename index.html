@@ -757,9 +757,9 @@ function setNobody() {
 }
 
 function updateNobodyBtn() {
-  const btn       = document.getElementById('nobody-btn');
-  const recording = sess.activeSpeaker >= 0;
-  btn.className   = 'nobody-btn ' + (recording ? 'recording' : 'idle');
+  const btn    = document.getElementById('nobody-btn');
+  const nobody = sess.activeSpeaker < 0;
+  btn.className = 'nobody-btn ' + (nobody ? 'recording' : 'idle');
 }
 
 // ── Phase management ──────────────────────────────────────────────────────
