@@ -1,17 +1,16 @@
 # Debate Timer
 
-Moderate live discussions with real-time speaking time tracking, agenda segments, and a note teleprompter — all from a single HTML file with optional server persistence.
+Moderate live discussions with real-time speaking time tracking, agenda segments, and a note teleprompter. No dependencies, no build step, no server — one HTML file.
 
 ## Features
 
 - **Speaking time tracker** — tap a participant card to start/stop tracking their speaking time; pause and resume at any time
 - **Balance warnings** — visual indicators when a speaker has talked too much (⬆ A lot) or too little (⬇ Little) relative to the group average
 - **Max speaking time** — optional per-session cap; shows a red ⏱ Max badge when a speaker exceeds it
-- **Moderator role** — mark any participant as moderator (excluded from balance warnings); they appear in the same grid as other speakers
+- **Moderator role** — mark any participant as moderator (excluded from balance warnings); appears in the same grid as other speakers
 - **Segments** — split the session into named phases (e.g. "Open Q&A", "Closing remarks") with individual countdowns
 - **Teleprompter** — write structured notes in Markdown (`## Section title` + bullets); navigate section by section with progress tracking
 - **Pause & resume** — step back to the setup screen without losing accumulated times; resume exactly where you left off
-- **Session persistence** — save configs and results to a server-side MySQL database; reload past sessions from the library
 - **Offline-ready PWA** — installs on Android and iPhone, works without internet after first load
 - **Wake Lock** — screen stays on during a session (Chrome / Android)
 
@@ -37,27 +36,22 @@ Each section becomes a slide in the teleprompter. Navigate with ← Prev / Next 
 
 ## Deployment
 
-### Server requirements
+### Option 1 — Open locally (zero setup)
 
-- Apache with `mod_rewrite` and `mod_headers`
-- PHP 7.4+ with PDO/MySQL
-- MySQL 5.7+ / MariaDB 10.3+
+Download `index.html` and open it in any browser. No server, no install. Data is saved in the browser's local storage.
 
-### Steps
+### Option 2 — GitHub Pages (recommended)
 
-1. Upload all files to your server directory (e.g. `/debate-timer-deploy/`)
-2. Copy `api/config.example.php` to `api/config.php` and fill in your DB credentials
-3. Browse to `install.php` to create the database table and set up HTTP Basic Auth
-4. Follow the on-screen instructions from `install.php`, then delete it (or it deletes itself)
-5. Uncomment the `Auth` block in `.htaccess` and update the `.htpasswd` path shown by `install.php`
+1. Fork this repository
+2. Go to **Settings → Pages**
+3. Set source to **Deploy from a branch**, select `main`, folder `/` (root)
+4. Save — your app is live at `https://your-username.github.io/debate-timer/`
 
-### Files NOT committed (deploy manually)
+HTTPS is provided automatically, which is required for the PWA and offline support.
 
-| File | Reason |
-|------|--------|
-| `api/config.php` | Contains DB credentials |
-| `install.php` | One-time setup script |
-| `.htpasswd` | Password file |
+### Option 3 — Any static host
+
+Upload `index.html`, `manifest.json`, `sw.js`, and `icon.svg` to any host that serves static files over HTTPS (Netlify, Vercel, Cloudflare Pages, etc.).
 
 ## Install as a PWA
 
@@ -70,12 +64,12 @@ Each section becomes a slide in the teleprompter. Navigate with ← Prev / Next 
 ### iPhone (Safari)
 
 1. Open the app URL in Safari
-2. Tap the **Share** button
+2. Tap the **Share** button (box with arrow at the bottom)
 3. Tap **Add to Home Screen** and confirm
 
 ## Data & privacy
 
-Session configs and results are stored in your own MySQL database. Nothing is sent to third-party servers. The API is protected by HTTP Basic Auth.
+All data stays on your device — nothing is sent to any server. Sessions are stored in the browser's `localStorage`, scoped to the PWA origin. Data persists across sessions and app updates.
 
 ## License
 

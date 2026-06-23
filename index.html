@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<base href="/debate-timer-deploy/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Debate Timer</title>
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d0d0d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -368,8 +367,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-se
 const SPEAKER_PAL = ['#3b82f6','#22c55e','#f97316','#ec4899','#14b8a6','#eab308','#f43f5e'];
 const MOD_COLOR   = '#a855f7';
 const PUB_COLOR   = '#64748b';
-const API         = '/debate-timer-deploy/api/debates.php';
+const LS_KEY      = 'debate-timer-v1';
 const DEFAULT_PARTICIPANTS = ['You', 'Speaker 1', 'Speaker 2', 'Speaker 3'];
+
+function lsLoad() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; }
+}
+function lsSave(entries) {
+  localStorage.setItem(LS_KEY, JSON.stringify(entries));
+}
 
 // ── Session state ─────────────────────────────────────────────────────────
 const sess = {
@@ -385,12 +391,14 @@ const sess = {
   isPaused: false, pausedAt: 0,
   raf: null, lock: null,
   notesSections: [], notesIdx: 0,
+  configId: null,
 };
-let _lib = [];
+let _lib = lsLoad();
 let includePublic = false;
 
 // ── Setup ─────────────────────────────────────────────────────────────────
 function initSetup() {
+  sess.configId = null;
   document.getElementById('parts-list').replaceChildren();
   document.getElementById('segs-list').replaceChildren();
   document.getElementById('disc-notes').value = '';
@@ -548,15 +556,12 @@ function promptNext() { if (sess.notesIdx < sess.notesSections.length - 1) { ses
 function promptPrev() { if (sess.notesIdx > 0)                             { sess.notesIdx--; renderPrompt(); } }
 
 // ── Save config ───────────────────────────────────────────────────────────
-async function saveConfig() {
-  const btn = document.getElementById('btn-save-config'), orig = btn.textContent;
-  btn.textContent = '…'; btn.disabled = true;
-
-  const name     = document.getElementById('disc-name').value.trim() || 'Session';
+function saveConfig() {
+  const btn  = document.getElementById('btn-save-config'), orig = btn.textContent;
+  const name = document.getElementById('disc-name').value.trim() || 'Session';
   const totalMin = parseFloat(document.getElementById('disc-duration').value) || 45;
   const maxMin   = parseFloat(document.getElementById('max-speak').value) || 0;
   const notes    = document.getElementById('disc-notes').value.trim();
-
   const participants = [];
   document.getElementById('parts-list').querySelectorAll('.part-row').forEach((row, i) => {
     const n   = row.querySelector('input').value.trim() || ('Speaker ' + (i + 1));
@@ -565,27 +570,21 @@ async function saveConfig() {
     participants.push({ name: n, color: mod ? MOD_COLOR : c, role: mod ? 'moderator' : 'speaker' });
   });
   if (includePublic) participants.push({ name: 'Audience', color: PUB_COLOR, role: 'public' });
-
   const segments = [];
   document.getElementById('segs-list').querySelectorAll('.seg-row').forEach(row => {
     const inputs = row.querySelectorAll('input');
     const dur    = parseFloat(inputs[1].value) || 0;
     if (dur > 0) segments.push({ name: inputs[0].value.trim() || 'Segment', durationMin: dur });
   });
-
-  const entry = {
-    id: String(Date.now()), name, savedAt: new Date().toISOString(),
-    totalMin, config: { participants, segments, notes, maxSpeakMin: maxMin }, results: null,
-  };
-  try {
-    await apiFetch(API, { method: 'POST', body: entry });
-    _lib.unshift(entry);
-    btn.textContent = '✓ Config saved';
-    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1600);
-  } catch (e) {
-    btn.textContent = '✗ ' + e.message;
-    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2500);
-  }
+  const id = sess.configId || String(Date.now());
+  sess.configId = id;
+  const entry = { id, name, savedAt: new Date().toISOString(), totalMin,
+    config: { participants, segments, notes, maxSpeakMin: maxMin }, results: null };
+  const idx = _lib.findIndex(e => e.id === id);
+  if (idx >= 0) _lib[idx] = entry; else _lib.unshift(entry);
+  lsSave(_lib);
+  btn.textContent = '✓ Saved';
+  setTimeout(() => { btn.textContent = orig; }, 1400);
 }
 
 // ── Start ─────────────────────────────────────────────────────────────────
@@ -916,22 +915,12 @@ document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible' && sess.raf) await acquireLock();
 });
 
-// ── API ───────────────────────────────────────────────────────────────────
-async function apiFetch(url, opts = {}) {
-  const res = await fetch(url, {
-    method:  opts.method || 'GET',
-    headers: opts.body != null ? { 'Content-Type': 'application/json' } : {},
-    body:    opts.body != null ? JSON.stringify(opts.body) : undefined,
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return res.json();
-}
-
-async function saveSession() {
-  const btn = document.getElementById('btn-save'), orig = btn.textContent;
-  btn.textContent = '…'; btn.disabled = true;
+function saveSession() {
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  const id = sess.configId || String(Date.now());
   const entry = {
-    id: String(Date.now()), name: sess.name, savedAt: new Date().toISOString(),
+    id, name: sess.name, savedAt: new Date().toISOString(),
     totalMin: sess.totalSec / 60,
     config: {
       participants: sess.participants.map(p => ({ name: p.name, color: p.color, role: p.role })),
@@ -943,33 +932,15 @@ async function saveSession() {
       speakers:   sess.participants.map(p => ({ name: p.name, color: p.color, role: p.role, secs: Math.round(p.secs) })),
     },
   };
-  try {
-    await apiFetch(API, { method: 'POST', body: entry });
-    _lib.unshift(entry);
-    btn.textContent = '✓ Saved';
-  } catch (e) {
-    btn.textContent = '✗ ' + e.message;
-    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2500);
-  }
+  const idx = _lib.findIndex(e => e.id === id);
+  if (idx >= 0) _lib[idx] = entry; else _lib.unshift(entry);
+  lsSave(_lib);
+  btn.textContent = '✓ Saved';
 }
 
-async function openLibrary() {
+function openLibrary() {
+  _lib = lsLoad();
   show('s-library');
-  const list = document.getElementById('lib-list');
-  list.replaceChildren();
-  const msg = mk('p', 'lib-empty'); msg.textContent = 'Loading…'; list.appendChild(msg);
-  let data;
-  try {
-    data = await apiFetch(API);
-  } catch (e) {
-    console.error('[openLibrary]', e);
-    list.replaceChildren();
-    const err = mk('p', 'lib-empty');
-    err.textContent = '⚠ Could not reach server (' + e.message + ')';
-    list.appendChild(err);
-    return;
-  }
-  _lib = Array.isArray(data) ? data : [];
   renderLibrary();
 }
 
@@ -1003,6 +974,7 @@ function renderLibrary() {
 }
 
 function loadConfig(entry) {
+  sess.configId = entry.id;
   document.getElementById('disc-name').value     = entry.name;
   document.getElementById('disc-duration').value = entry.totalMin;
   document.getElementById('disc-notes').value    = entry.config?.notes || '';
@@ -1042,14 +1014,10 @@ function viewResults(entry) {
   show('s-results');
 }
 
-async function deleteEntry(id) {
-  try {
-    await apiFetch(API + '?id=' + encodeURIComponent(id), { method: 'DELETE' });
-    _lib = _lib.filter(e => e.id !== id); renderLibrary();
-  } catch (e) {
-    const err = mk('p', 'lib-empty'); err.textContent = '✗ Delete failed (' + e.message + ')';
-    document.getElementById('lib-list').prepend(err);
-  }
+function deleteEntry(id) {
+  _lib = _lib.filter(e => e.id !== id);
+  lsSave(_lib);
+  renderLibrary();
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────
