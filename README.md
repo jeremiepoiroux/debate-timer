@@ -1,36 +1,39 @@
-# Debat Timer
+# Debate Timer
 
-A mobile-first discussion and debate moderation tool. Track speaking time per participant, follow a structured agenda with segments, and use the built-in teleprompter for prepared notes — all from a single HTML file with optional server persistence.
+Moderate live discussions with real-time speaking time tracking, agenda segments, and a note teleprompter — all from a single HTML file with optional server persistence.
 
 ## Features
 
 - **Speaking time tracker** — tap a participant card to start/stop tracking their speaking time; pause and resume at any time
-- **Balance warnings** — visual indicators when a speaker has talked too much (⬆ Beaucoup) or too little (⬇ Peu) relative to the group average
-- **Segments** — split the session into named phases (e.g. "Discussion libre", "Questions public") with individual countdowns
-- **Teleprompter** — write structured notes in `N Title / bullets` format; navigate section by section during the session with progress tracking
-- **Pause & resume** — step back to the setup screen without losing any accumulated times; resume exactly where you left off
+- **Balance warnings** — visual indicators when a speaker has talked too much (⬆ A lot) or too little (⬇ Little) relative to the group average
+- **Max speaking time** — optional per-session cap; shows a red ⏱ Max badge when a speaker exceeds it
+- **Moderator role** — mark any participant as moderator (excluded from balance warnings); they appear in the same grid as other speakers
+- **Segments** — split the session into named phases (e.g. "Open Q&A", "Closing remarks") with individual countdowns
+- **Teleprompter** — write structured notes in Markdown (`## Section title` + bullets); navigate section by section with progress tracking
+- **Pause & resume** — step back to the setup screen without losing accumulated times; resume exactly where you left off
 - **Session persistence** — save configs and results to a server-side MySQL database; reload past sessions from the library
 - **Offline-ready PWA** — installs on Android and iPhone, works without internet after first load
 - **Wake Lock** — screen stays on during a session (Chrome / Android)
 
 ## Teleprompter note format
 
-Structure notes with numbered section headers followed by bullet points:
+Write notes using Markdown headings followed by bullet points:
 
+```markdown
+## Introduction
+- Participant introductions
+- Context and objectives
+
+## Main discussion
+- Opening question: …
+- Follow-up angles
+
+## Wrap-up
+- Key takeaways
+- Next steps
 ```
-1 Introduction
-Présentation des participants
-Contexte et enjeux
 
-2 Débat principal
-Question ouverte : …
-Sous-question de relance
-
-3 Synthèse
-Points clés à retenir
-```
-
-Each section becomes a slide in the teleprompter. Navigate with ← Préc. / Suivant →.
+Each section becomes a slide in the teleprompter. Navigate with ← Prev / Next →.
 
 ## Deployment
 
