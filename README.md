@@ -1,4 +1,4 @@
-# Débat Timer
+# Debat Timer
 
 A mobile-first discussion and debate moderation tool. Track speaking time per participant, follow a structured agenda with segments, and use the built-in teleprompter for prepared notes — all from a single HTML file with optional server persistence.
 
