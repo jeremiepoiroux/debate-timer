@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#1a1a1a"/>
+  <!-- Speech bubble left (blue) -->
+  <rect x="60" y="120" width="230" height="160" rx="28" fill="#3b82f6"/>
+  <polygon points="90,280 60,340 150,280" fill="#3b82f6"/>
+  <!-- Speech bubble right (muted, offset) -->
+  <rect x="220" y="220" width="230" height="160" rx="28" fill="#2e2e2e"/>
+  <polygon points="400,380 450,440 360,380" fill="#2e2e2e"/>
+  <!-- Mic lines inside left bubble -->
+  <rect x="110" y="170" width="130" height="14" rx="7" fill="rgba(255,255,255,.7)"/>
+  <rect x="110" y="202" width="95"  height="14" rx="7" fill="rgba(255,255,255,.5)"/>
+  <rect x="110" y="234" width="110" height="14" rx="7" fill="rgba(255,255,255,.4)"/>
+</svg>
