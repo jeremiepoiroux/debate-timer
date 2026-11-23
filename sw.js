@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE = 'timing-tracker-v1';
+const CACHE = 'debate-timer-v1';
 const SHELL = ['/', '/index.html', '/icon.svg', '/manifest.json'];
 
 self.addEventListener('install', e => {

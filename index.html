@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Timing Tracker</title>
+<title>Debate Timer</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d9488">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,7 +13,7 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Design tokens (light) ─────────────────────────────── */
+/* ── Design tokens ─────────────────────────────────────────────────────── */
 :root {
   --bg: #f9f9f8; --surf: #fff; --surf2: #f0efed;
   --border: #e2e0dc; --border-s: #ccc9c3;
@@ -25,8 +25,6 @@
   --err: #dc2626; --err-bg: #fee2e2;
   --purple: #7c3aed; --purple-bg: rgba(124,58,237,.08); --purple-border: rgba(124,58,237,.28);
   --mod-surf: #faf5ff; --mod-border: rgba(124,58,237,.2);
-  --note-bg: #f0fdf4; --note-border: #bbf7d0;
-  --note-text: #15803d; --note-dim: #86efac; --note-title: #14532d; --note-sep: #dcfce7;
   --shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
   --radius: 13px; --radius-s: 10px;
 }
@@ -41,12 +39,10 @@
   --err: #f87171; --err-bg: #3b0f0f;
   --purple: #a78bfa; --purple-bg: rgba(167,139,250,.12); --purple-border: rgba(167,139,250,.4);
   --mod-surf: #160f20; --mod-border: #2d1f45;
-  --note-bg: #0a150a; --note-border: #1c2e16;
-  --note-text: #a8d580; --note-dim: #4a7030; --note-title: #d4f0a0; --note-sep: #162512;
   --shadow: 0 1px 4px rgba(0,0,0,.3);
 }}
 
-/* ── Base ──────────────────────────────────────────────── */
+/* ── Base ──────────────────────────────────────────────────────────────── */
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg); color: var(--text); min-height: 100dvh;
@@ -57,7 +53,19 @@ body {
 .screen-title { font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em; }
 .screen-sub { font-size: .88rem; color: var(--muted); margin-top: 4px; margin-bottom: 20px; }
 
-/* ── Fields ────────────────────────────────────────────── */
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.btn { display: block; width: 100%; padding: 16px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: .98rem; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .1s, opacity .1s, background .12s; font-family: inherit; }
+.btn:active { transform: scale(.97); opacity: .88; }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn-primary { background: var(--accent); border-color: var(--accent-d); color: #fff; }
+.btn-primary:active { background: var(--accent-d); }
+.btn-green   { background: var(--ok);   border-color: var(--ok);   color: #fff; }
+.btn-ghost   { background: var(--surf2); color: var(--text); }
+.mt8 { margin-top: 8px; } .mt12 { margin-top: 12px; }
+.row2 { display: flex; gap: 10px; margin-top: 10px; }
+.row2 .btn { margin-top: 0; }
+
+/* ── Fields ────────────────────────────────────────────────────────────── */
 .field { margin-bottom: 16px; }
 .field label { display: block; font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 7px; font-weight: 500; }
 .field input, .field textarea, .field select {
@@ -68,24 +76,42 @@ body {
 .field textarea { resize: none; line-height: 1.5; }
 .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
 
-/* ── Buttons ───────────────────────────────────────────── */
-.btn { display: block; width: 100%; padding: 16px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: .98rem; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .1s, opacity .1s, background .12s; font-family: inherit; }
-.btn:active { transform: scale(.97); opacity: .88; }
-.btn:disabled { opacity: .4; cursor: default; }
-.btn-primary { background: var(--accent); border-color: var(--accent-d); color: #fff; }
-.btn-primary:active { background: var(--accent-d); }
-.btn-green   { background: var(--ok);   border-color: var(--ok);   color: #fff; }
-.btn-ghost   { background: var(--surf2); color: var(--text); }
-.btn-danger  { background: var(--err-bg); color: var(--err); border-color: var(--err); }
-.mt8 { margin-top: 8px; } .mt12 { margin-top: 12px; }
-.row2 { display: flex; gap: 10px; margin-top: 10px; }
-.row2 .btn { margin-top: 0; }
-.chip { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; background: var(--surf); border: 1px solid var(--border); border-radius: 22px; font-size: .88rem; color: var(--muted); cursor: pointer; margin-bottom: 14px; -webkit-tap-highlight-color: transparent; box-shadow: var(--shadow); }
-.chip:active { background: var(--surf2); }
+/* ── Home screen ───────────────────────────────────────────────────────── */
+.home-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; margin-top: 16px; padding-bottom: 8px; }
+.home-empty { text-align: center; padding: 48px 0; color: var(--muted); font-size: .92rem; line-height: 1.6; }
+.home-empty strong { display: block; font-size: 1rem; color: var(--text); margin-bottom: 6px; }
+.session-card {
+  background: var(--surf); border: 1.5px solid var(--border); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 10px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: opacity .1s, transform .1s;
+  box-shadow: var(--shadow);
+}
+.session-card:active { opacity: .8; transform: scale(.985); }
+.session-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.session-card-name { font-weight: 700; font-size: 1rem; flex: 1; line-height: 1.3; }
+.session-card-badge {
+  font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 20px;
+  flex-shrink: 0; margin-top: 1px;
+}
+.badge-saved  { background: var(--ok-bg);   color: var(--ok);   }
+.badge-config { background: var(--accent-bg); color: var(--accent); }
+.badge-paused { background: var(--warn-bg); color: var(--warn); }
+.session-card-meta { font-size: .8rem; color: var(--muted); margin-top: 7px; line-height: 1.5; }
+.session-card-speakers { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.spk-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.spk-chip { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--muted); }
+.session-card-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.btn-sm { padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: .8rem; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; font-family: inherit; background: var(--surf2); color: var(--text); }
+.btn-sm:active { opacity: .7; }
+.btn-sm-primary { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+.btn-sm-del { background: var(--err-bg); border-color: var(--err); color: var(--err); }
+.btn-sm-del.confirm { background: var(--err); color: #fff; }
+.btn-sm-results { background: var(--surf2); color: var(--muted); }
 
-/* ── Setup ─────────────────────────────────────────────── */
+/* ── Setup screen ──────────────────────────────────────────────────────── */
+.screen-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
+.back-link { background: none; border: none; color: var(--muted); font-size: 1.1rem; padding: 4px 8px 4px 0; cursor: pointer; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
 .setup-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.chips-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
 .section-hd { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 10px; }
 .section-lbl { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
 .btn-add { padding: 6px 14px; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 22px; font-size: .82rem; color: var(--accent); cursor: pointer; -webkit-tap-highlight-color: transparent; font-family: inherit; font-weight: 600; }
@@ -102,10 +128,9 @@ body {
 .dur-info { background: var(--surf); border: 1px solid var(--border); border-radius: var(--radius-s); padding: 11px 14px; font-size: .85rem; color: var(--muted); margin: 10px 0; display: flex; justify-content: space-between; }
 .dur-info b { color: var(--text); font-variant-numeric: tabular-nums; }
 .setup-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-.btn-save-cfg { background: var(--surf2); color: var(--muted); border-color: var(--border); font-size: .88rem; padding: 13px; }
 .field-hint { font-size: .72rem; color: var(--muted); margin-top: 6px; line-height: 1.4; }
 
-/* ── Discussion screen ─────────────────────────────────── */
+/* ── Discussion screen ─────────────────────────────────────────────────── */
 #s-discuss { padding: max(env(safe-area-inset-top),14px) 16px max(env(safe-area-inset-bottom),10px); gap: 0; }
 .disc-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .back-btn { background: none; border: none; color: var(--muted); font-size: 1.4rem; padding: 4px 6px 4px 0; cursor: pointer; -webkit-tap-highlight-color: transparent; flex-shrink: 0; line-height: 1; }
@@ -116,176 +141,132 @@ body {
 .tt-sep { margin: 0 2px; }
 .tt-down { font-weight: 700; color: var(--text); }
 
-/* ── Phase bar ─────────────────────────────────────────── */
+/* ── Phase bar ─────────────────────────────────────────────────────────── */
 .phase-box { display: flex; align-items: center; gap: 10px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--radius-s); padding: 9px 13px; margin-bottom: 8px; box-shadow: var(--shadow); }
 .phase-lbl { font-size: .75rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
 .phase-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 2px; transition: width .4s linear, background .3s; background: var(--accent); }
 .countdown { font-size: 1.4rem; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; transition: color .3s; }
 
-/* ── Prompter ──────────────────────────────────────────── */
-.prompt-panel { background: var(--note-bg); border: 1.5px solid var(--note-border); border-radius: var(--radius); margin-bottom: 8px; overflow: hidden; flex-shrink: 0; }
+/* ── Teleprompter ──────────────────────────────────────────────────────── */
+.prompt-panel { background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: var(--radius); margin-bottom: 8px; overflow: hidden; flex-shrink: 0; }
+@media (prefers-color-scheme: dark) { .prompt-panel { background: #0a150a; border-color: #1c2e16; } }
 .prompt-progress { display: flex; gap: 4px; padding: 10px 14px 0; }
 .prompt-prog-dot { flex: 1; height: 3px; border-radius: 2px; background: var(--border); transition: background .3s; }
-.prompt-prog-dot.done   { background: var(--note-dim); }
-.prompt-prog-dot.active { background: var(--note-text); }
-.prompt-hd { display: flex; align-items: center; gap: 10px; padding: 10px 14px 6px; }
-.prompt-num { font-size: .68rem; font-weight: 700; color: var(--note-dim); font-variant-numeric: tabular-nums; flex-shrink: 0; letter-spacing: .04em; }
-.prompt-title { font-size: 1.1rem; font-weight: 700; color: var(--note-title); flex: 1; line-height: 1.25; }
-@media (min-width: 600px) { .prompt-title { font-size: 1.25rem; } }
-.prompt-body { padding: 2px 14px 10px; max-height: 160px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-@media (min-width: 600px) { .prompt-body { max-height: 220px; } }
-.prompt-bullet { display: flex; gap: 10px; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--note-sep); font-size: 1rem; color: var(--note-text); line-height: 1.55; }
-@media (min-width: 600px) { .prompt-bullet { font-size: 1.08rem; } }
-.prompt-bullet:last-child { border-bottom: none; }
-.prompt-bullet-dot { flex-shrink: 0; width: 5px; height: 5px; margin-top: 8px; border-radius: 50%; background: var(--note-dim); }
-.prompt-nav { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-top: 1px solid var(--note-border); gap: 8px; }
-.prompt-btn { display: flex; align-items: center; gap: 5px; background: var(--note-bg); border: 1px solid var(--note-border); color: var(--note-text); padding: 8px 14px; border-radius: 9px; font-size: .88rem; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; flex-shrink: 0; font-family: inherit; }
-.prompt-btn:disabled { opacity: .28; pointer-events: none; }
-.prompt-btn-next { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); flex: 1; justify-content: center; }
+.prompt-prog-dot.done   { background: #86efac; }
+.prompt-prog-dot.active { background: #15803d; }
+@media (prefers-color-scheme: dark) {
+  .prompt-prog-dot.done   { background: #4a7030; }
+  .prompt-prog-dot.active { background: #a8d580; }
+}
+.prompt-hd { display: flex; align-items: baseline; gap: 10px; padding: 10px 14px 4px; }
+.prompt-num { font-size: .72rem; color: #86efac; font-weight: 600; flex-shrink: 0; }
+@media (prefers-color-scheme: dark) { .prompt-num { color: #4a7030; } }
+.prompt-title { font-size: .9rem; font-weight: 700; color: #14532d; flex: 1; }
+@media (prefers-color-scheme: dark) { .prompt-title { color: #d4f0a0; } }
+.prompt-body { padding: 2px 14px 10px; max-height: 100px; overflow-y: auto; }
+.prompt-bullet { display: flex; gap: 8px; align-items: flex-start; padding: 3px 0; font-size: .88rem; color: #15803d; line-height: 1.4; }
+@media (prefers-color-scheme: dark) { .prompt-bullet { color: #a8d580; } }
+.prompt-bullet-dot { width: 5px; height: 5px; border-radius: 50%; background: #86efac; flex-shrink: 0; margin-top: 6px; }
+.prompt-nav { display: flex; gap: 0; border-top: 1px solid #dcfce7; }
+@media (prefers-color-scheme: dark) { .prompt-nav { border-top-color: #162512; } }
+.prompt-btn { flex: 1; padding: 10px; background: none; border: none; font-size: .82rem; color: #15803d; cursor: pointer; font-family: inherit; font-weight: 600; -webkit-tap-highlight-color: transparent; }
+@media (prefers-color-scheme: dark) { .prompt-btn { color: #a8d580; } }
+.prompt-btn:disabled { opacity: .3; }
+.prompt-btn-next { border-left: 1px solid #dcfce7; }
+@media (prefers-color-scheme: dark) { .prompt-btn-next { border-left-color: #162512; } }
 
-/* ── Nobody button ─────────────────────────────────────── */
+/* ── Nobody button ─────────────────────────────────────────────────────── */
 .nobody-btn {
-  width: 100%; padding: 15px; margin-bottom: 8px;
-  background: var(--surf); border: 2px solid var(--border);
-  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
-  color: var(--muted); cursor: pointer; -webkit-tap-highlight-color: transparent;
-  transition: background .15s, color .15s, border-color .15s;
-  flex-shrink: 0; font-family: inherit;
+  width: 100%; padding: 15px; border-radius: var(--radius); font-size: .95rem; font-weight: 600;
+  cursor: pointer; -webkit-tap-highlight-color: transparent; border: 1.5px solid var(--border);
+  font-family: inherit; transition: background .2s, color .2s, border-color .2s;
+  margin-bottom: 10px; flex-shrink: 0;
 }
-.nobody-btn.idle { background: var(--surf2); color: var(--text); border-color: var(--border-s); }
-.nobody-btn.recording {
-  border-color: var(--warn); color: var(--warn);
-  animation: nobody-pulse 1.4s ease-in-out infinite;
-}
-@keyframes nobody-pulse {
-  0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--warn) 0%, transparent); }
-  50%      { box-shadow: 0 0 0 7px color-mix(in srgb, var(--warn) 22%, transparent); }
-}
+.nobody-btn.idle      { background: var(--surf2); color: var(--muted); }
+.nobody-btn.recording { background: var(--warn-bg); border-color: var(--warn); color: var(--warn);
+  animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .65; } }
 
-/* ── Speaker area ──────────────────────────────────────── */
-.spk-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
-.spk-section-lbl { font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 6px 0 6px; }
-.spk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-
-/* Speaker cards */
-.spk-card { background: var(--surf); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; border: 2px solid var(--border); transition: border-color .2s; box-shadow: var(--shadow); }
-.spk-card:active { transform: scale(.96); }
-.spk-card.active { border-color: var(--err); animation: card-glow 1.4s ease-in-out infinite; }
-@keyframes card-glow {
-  0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--err) 0%, transparent); }
-  50%      { box-shadow: 0 0 22px 6px color-mix(in srgb, var(--err) 28%, transparent); }
+/* ── Speaker grid ──────────────────────────────────────────────────────── */
+.spk-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.spk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 4px; }
+.spk-card {
+  background: var(--surf); border: 2px solid var(--border); border-radius: var(--radius);
+  padding: 14px 12px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: border-color .15s, background .15s, box-shadow .15s; box-shadow: var(--shadow);
 }
-.spk-mod { background: var(--mod-surf); border-color: var(--mod-border); }
-.spk-mod.active { border-color: var(--purple) !important; animation: mod-glow 1.4s ease-in-out infinite; }
-@keyframes mod-glow {
-  0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--purple) 0%, transparent); }
-  50%      { box-shadow: 0 0 22px 6px color-mix(in srgb, var(--purple) 28%, transparent); }
-}
-.spk-pub { background: var(--surf2); border-color: var(--border); margin-top: 8px; }
-.spk-pub.active { border-color: var(--border-s) !important; }
-.spk-hdr { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; min-width: 0; }
-.spk-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--border-s); flex-shrink: 0; position: relative; transition: background .2s; }
-.spk-card.active .spk-dot { background: var(--err); }
-.spk-card.active .spk-dot::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 2.5px solid color-mix(in srgb, var(--err) 65%, transparent); animation: ring-expand 1.4s ease-out infinite; }
-.spk-mod.active .spk-dot { background: var(--purple); }
-.spk-mod.active .spk-dot::after { border-color: color-mix(in srgb, var(--purple) 65%, transparent); }
-@keyframes ring-expand { 0% { transform: scale(.7); opacity: .9; } 100% { transform: scale(2.4); opacity: 0; } }
-.spk-name { font-size: .85rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-.role-tag { font-size: .62rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; flex-shrink: 0; }
-.mod-tag { background: var(--purple-bg); color: var(--purple); }
-.pub-tag { background: var(--surf2); color: var(--faint); }
-.spk-warn { font-size: .65rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; flex-shrink: 0; white-space: nowrap; }
-.warn-high { background: var(--warn-bg); color: var(--warn); }
-.warn-low  { background: var(--accent-bg); color: var(--accent); }
-.warn-max  { background: var(--err-bg); color: var(--err); }
-.spk-time { font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.03em; line-height: 1; margin-bottom: 8px; }
-.spk-pct-row { display: flex; align-items: center; gap: 7px; }
-.spk-bar { flex: 1; height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
-.spk-bar-fill { height: 100%; border-radius: 4px; transition: width .4s linear; }
-.spk-pct-txt { font-size: .78rem; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 30px; text-align: right; }
+.spk-card.active { background: var(--accent-bg); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+.spk-card.mod-card { background: var(--mod-surf); border-color: var(--mod-border); }
+.spk-hdr { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+.spk-name { font-size: .88rem; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.spk-warn { font-size: .75rem; }
+.spk-time { font-size: 1.3rem; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; margin-bottom: 6px; }
+.spk-pct-row { display: flex; align-items: center; gap: 8px; }
+.spk-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.spk-bar-fill { height: 100%; border-radius: 2px; transition: width .4s ease; }
+.spk-pct-txt { font-size: .72rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.spk-section-lbl { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; padding: 10px 0 6px; }
 
-/* ── Controls ──────────────────────────────────────────── */
-.disc-ctrl { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-.btn-sm-ctrl { display: block; width: 100%; padding: 11px; border: 1.5px solid var(--border); border-radius: var(--radius-s); font-size: .88rem; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .1s, opacity .1s; font-family: inherit; background: var(--surf2); color: var(--text); }
-.btn-sm-ctrl:active { transform: scale(.97); opacity: .85; }
-.btn-next-seg { background: var(--surf); color: var(--text); }
-.btn-end { background: var(--err-bg); color: var(--err); border-color: var(--err); }
+/* ── Discussion controls ───────────────────────────────────────────────── */
+.disc-ctrl { display: flex; gap: 10px; padding-top: 10px; flex-shrink: 0; }
+.btn-sm-ctrl { flex: 1; padding: 13px; border-radius: var(--radius-s); font-size: .88rem; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); font-family: inherit; -webkit-tap-highlight-color: transparent; }
+.btn-next-seg { background: var(--surf2); color: var(--text); }
+.btn-end      { background: var(--err-bg); border-color: var(--err); color: var(--err); }
 
-/* ── Summary ───────────────────────────────────────────── */
-.sum-hero { background: var(--surf); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; text-align: center; margin-bottom: 18px; box-shadow: var(--shadow); }
-.sum-hero .big { font-size: 2.5rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
-.sum-hero .sub { font-size: .85rem; color: var(--muted); margin-top: 5px; }
-.stat-scroll { flex: 1; overflow-y: auto; margin-bottom: 12px; }
-.stat-section { font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 14px 0 6px; font-weight: 600; }
-.stat-row { padding: 12px 0; border-bottom: 1px solid var(--border); }
-.stat-row:last-child { border-bottom: none; }
-.stat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.stat-name { font-size: 1rem; font-weight: 600; }
+/* ── Summary / Stats ───────────────────────────────────────────────────── */
+.sum-hero { text-align: center; padding: 24px 0; }
+.sum-hero .big { font-size: 3rem; font-weight: 800; letter-spacing: -.04em; font-variant-numeric: tabular-nums; color: var(--accent); }
+.sum-hero .sub { font-size: .85rem; color: var(--muted); margin-top: 6px; }
+.stat-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.stat-section { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; padding: 12px 0 8px; }
+.stat-row { background: var(--surf); border: 1px solid var(--border); border-radius: var(--radius-s); padding: 12px 14px; margin-bottom: 8px; box-shadow: var(--shadow); }
+.stat-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+.stat-name { font-weight: 700; font-size: .92rem; }
 .stat-right { text-align: right; }
 .stat-time { font-size: 1rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-.stat-pct { font-size: .78rem; color: var(--muted); margin-top: 1px; }
-.stat-bar { height: 9px; background: var(--border); border-radius: 5px; overflow: hidden; }
-.stat-bar-fill { height: 100%; border-radius: 5px; }
-
-/* ── Library ───────────────────────────────────────────── */
-.lib-scroll { flex: 1; overflow-y: auto; margin-bottom: 12px; }
-.lib-empty { color: var(--muted); font-size: .9rem; text-align: center; padding: 40px 0; }
-.lib-row { padding: 14px 0; border-bottom: 1px solid var(--border); }
-.lib-row:last-child { border-bottom: none; }
-.lib-name { font-size: 1rem; font-weight: 600; margin-bottom: 3px; }
-.lib-meta { font-size: .78rem; color: var(--muted); margin-bottom: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lib-acts { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn-sm { padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-s); font-size: .84rem; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; font-family: inherit; background: var(--surf2); color: var(--text); }
-.btn-sm:active { opacity: .8; }
-.btn-sm-blue  { background: var(--accent); border-color: var(--accent-d); color: #fff; }
-.btn-sm-ghost { background: var(--surf2); color: var(--muted); }
-.btn-sm-del   { background: var(--surf2); color: var(--muted); margin-left: auto; }
-.btn-sm-del.confirm { background: var(--err); border-color: var(--err); color: #fff; }
+.stat-pct  { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+.stat-bar  { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.stat-bar-fill { height: 100%; border-radius: 2px; transition: width .5s ease; }
 </style>
 </head>
 <body>
 
-<!-- ① Setup -->
-<div id="s-setup" class="screen active">
-  <div class="screen-title">Timing Tracker</div>
-  <div class="screen-sub">Session setup</div>
-  <div class="chips-row">
-    <div class="chip" onclick="openLibrary()">📁 Past sessions</div>
+<!-- ① Home -->
+<div id="s-home" class="screen active">
+  <div class="screen-title">Debate Timer</div>
+  <div class="screen-sub">Track speaking time in live discussions</div>
+  <button class="btn btn-primary" onclick="newSession()">+ New session</button>
+  <div class="home-scroll" id="home-list"></div>
+</div>
+
+<!-- ② Setup -->
+<div id="s-setup" class="screen">
+  <div class="screen-nav">
+    <button class="back-link" onclick="navBack()">←</button>
+    <div class="screen-title" style="font-size:1.3rem">Session setup</div>
   </div>
   <div class="setup-scroll">
     <div class="field">
       <label>Session name</label>
-      <input type="text" id="disc-name" placeholder="e.g. Friday roundtable, board meeting…" autocomplete="off" autocapitalize="words">
+      <input id="disc-name" type="text" placeholder="e.g. Friday roundtable, board meeting…" autocomplete="off" autocapitalize="words">
     </div>
     <div class="field">
       <label>Total duration (minutes)</label>
-      <input type="number" id="disc-duration" min="1" max="360" value="45" inputmode="decimal" oninput="updateDurInfo()">
+      <input id="disc-duration" type="number" value="45" min="1" max="480" inputmode="numeric">
     </div>
     <div class="field">
       <label>Max speaking time per speaker (min, optional)</label>
-      <input type="number" id="max-speak" min="0" max="60" value="" inputmode="decimal" placeholder="e.g. 5 — leave blank to disable">
-    </div>
-    <div class="field">
-      <label>Notes / Teleprompter <span style="font-size:.9em;opacity:.6">(format: <code style="color:var(--note-text)">## Section title</code> then bullet lines)</span></label>
-      <textarea id="disc-notes" rows="6" placeholder="## Introduction&#10;- Context and objectives&#10;- Who is in the room?&#10;&#10;## Main discussion&#10;- Opening question: …&#10;- Follow-up angles&#10;&#10;## Wrap-up&#10;- Key takeaways&#10;- Next steps"></textarea>
+      <input id="max-speak" type="number" placeholder="e.g. 5 — leave blank to disable" min="1" max="60" inputmode="numeric">
     </div>
 
-    <!-- Speakers -->
     <div class="section-hd">
       <span class="section-lbl">Participants</span>
       <button class="btn-add" onclick="addParticipant()">+ Add</button>
     </div>
-    <div class="field-hint" style="margin-bottom:10px">Tap 🎙 to mark someone as moderator (excluded from balance warnings)</div>
     <div id="parts-list"></div>
-
-    <!-- Audience -->
-    <div class="section-hd">
-      <span class="section-lbl">Audience</span>
-    </div>
     <button class="pub-toggle" id="pub-toggle" onclick="togglePublic()">+ Include audience</button>
 
-    <!-- Segments -->
     <div class="section-hd">
       <span class="section-lbl">Segments (optional)</span>
       <button class="btn-add" onclick="addSegment()">+ Add</button>
@@ -293,20 +274,24 @@ body {
     <div id="segs-list"></div>
     <div class="dur-info" id="dur-info" style="display:none">
       <span id="dur-info-lbl">Discussion</span>
-      <b id="dur-info-val">45:00</b>
+      <b id="dur-info-val"></b>
     </div>
-  </div>
 
-  <div class="setup-btns">
-    <button class="btn btn-green" id="btn-resume" onclick="resumeDiscussion()" style="display:none">▶ Resume session</button>
-    <button class="btn btn-primary" id="btn-start" onclick="startDiscussion()">Start →</button>
-    <button class="btn btn-save-cfg btn" id="btn-save-config" onclick="saveConfig()">💾 Save config</button>
+    <div class="field">
+      <label>Notes / Teleprompter (optional)</label>
+      <textarea id="disc-notes" rows="5" placeholder="## Introduction&#10;- Participant introductions&#10;- Context and objectives&#10;&#10;## Main discussion&#10;- Opening question: …"></textarea>
+      <div class="field-hint">Use ## Section title + bullet points. Each section becomes a teleprompter slide.</div>
+    </div>
+
+    <div class="setup-btns">
+      <button class="btn btn-green" id="btn-resume" onclick="resumeDiscussion()" style="display:none">▶ Resume session</button>
+      <button class="btn btn-primary" id="btn-start" onclick="startDiscussion()">Start →</button>
+    </div>
   </div>
 </div>
 
-<!-- ② Discussion -->
+<!-- ③ Discussion -->
 <div id="s-discuss" class="screen">
-  <!-- Header: back | name | clock | elapsed/remaining -->
   <div class="disc-hd">
     <button class="back-btn" onclick="pauseDiscussion()">←</button>
     <div class="disc-hd-name" id="disc-hd-name">Session</div>
@@ -320,14 +305,12 @@ body {
     </div>
   </div>
 
-  <!-- Phase bar -->
   <div class="phase-box">
     <div class="phase-lbl" id="phase-lbl">Discussion</div>
     <div class="phase-track"><div class="bar-fill" id="phase-fill" style="width:0%"></div></div>
     <div class="countdown" id="phase-cd">45:00</div>
   </div>
 
-  <!-- Teleprompter -->
   <div class="prompt-panel" id="prompt-panel" style="display:none">
     <div class="prompt-progress" id="prompt-progress"></div>
     <div class="prompt-hd">
@@ -341,82 +324,73 @@ body {
     </div>
   </div>
 
-  <!-- Nobody button — prominent, above speakers -->
   <button class="nobody-btn idle" id="nobody-btn" onclick="setNobody()">⏸ Nobody speaking</button>
 
-  <!-- Speaker area -->
   <div class="spk-area">
     <div class="spk-grid" id="spk-grid"></div>
     <div class="spk-section-lbl" id="pub-lbl" style="display:none">Audience</div>
     <div id="pub-container"></div>
   </div>
 
-  <!-- Controls -->
   <div class="disc-ctrl">
     <button class="btn-sm-ctrl btn-next-seg" id="next-seg-btn" onclick="nextPhase()" style="display:none">Next segment →</button>
     <button class="btn-sm-ctrl btn-end" onclick="endDiscussion()">✓ End session</button>
   </div>
 </div>
 
-<!-- ③ Summary -->
+<!-- ④ Summary -->
 <div id="s-summary" class="screen">
-  <div class="screen-title">Summary</div>
+  <div class="screen-nav">
+    <button class="back-link" onclick="navHome()">←</button>
+    <div class="screen-title" style="font-size:1.3rem">Summary</div>
+  </div>
   <div class="sum-hero">
     <div class="big" id="sum-elapsed">0:00</div>
     <div class="sub" id="sum-sub">total duration</div>
   </div>
   <div class="stat-scroll"><div id="sum-rows"></div></div>
-  <button class="btn btn-green" id="btn-save" onclick="saveSession()">Save results</button>
-  <div class="row2">
-    <button class="btn btn-ghost" onclick="show('s-setup')">+ New</button>
-    <button class="btn btn-ghost" onclick="replayDiscussion()">↺ Replay</button>
-  </div>
-</div>
-
-<!-- ④ Library -->
-<div id="s-library" class="screen">
-  <div class="screen-title">Past sessions</div>
-  <div class="screen-sub">Server library</div>
-  <div class="lib-scroll"><div id="lib-list"></div></div>
-  <button class="btn btn-ghost" onclick="show('s-setup')">← Back</button>
+  <button class="btn btn-green mt8" id="btn-save" onclick="saveSession()">Save results</button>
+  <button class="btn btn-ghost mt8" onclick="navHome()">← Home</button>
 </div>
 
 <!-- ⑤ Results (read-only) -->
 <div id="s-results" class="screen">
-  <div class="screen-title" id="res-title">Results</div>
-  <div class="screen-sub" id="res-sub">—</div>
+  <div class="screen-nav">
+    <button class="back-link" onclick="navBack()">←</button>
+    <div>
+      <div class="screen-title" id="res-title" style="font-size:1.3rem">Results</div>
+      <div class="screen-sub" id="res-sub" style="margin-bottom:0">—</div>
+    </div>
+  </div>
   <div class="sum-hero">
     <div class="big" id="res-elapsed">0:00</div>
     <div class="sub" id="res-sub2">total duration</div>
   </div>
   <div class="stat-scroll"><div id="res-rows"></div></div>
-  <button class="btn btn-ghost mt12" onclick="show('s-library')">← Back</button>
+  <button class="btn btn-ghost mt12" onclick="navBack()">← Back</button>
 </div>
 
 <script>
 'use strict';
 
-// ── Constants ─────────────────────────────────────────────────────────────
 const SPEAKER_PAL = ['#3b82f6','#22c55e','#f97316','#ec4899','#14b8a6','#eab308','#f43f5e'];
 const MOD_COLOR   = '#a855f7';
 const PUB_COLOR   = '#64748b';
-const LS_KEY      = 'timing-tracker-v1';
+const LS_KEY      = 'debate-timer-v1';
 const DEFAULT_PARTICIPANTS = ['You', 'Speaker 1', 'Speaker 2', 'Speaker 3'];
 
 function lsLoad() {
   try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; }
 }
-function lsSave(entries) {
-  localStorage.setItem(LS_KEY, JSON.stringify(entries));
-}
+function lsSave(entries) { localStorage.setItem(LS_KEY, JSON.stringify(entries)); }
 
 // ── Session state ─────────────────────────────────────────────────────────
 const sess = {
   name: '', notes: '',
-  participants: [],   // [{name, color, secs, role}]
-  segments: [],       // [{name, durationSec}]
+  participants: [],
+  segments: [],
   totalSec: 0, discussionSec: 0,
-  maxSpeakSec: 0,     // 0 = disabled
+  maxSpeakSec: 0,
   phaseIdx: 0,
   activeSpeaker: -1,
   speakerStart: 0, phaseStart: 0, sessionStart: 0,
@@ -429,22 +403,170 @@ const sess = {
 let _lib = lsLoad();
 let includePublic = false;
 
-// ── Setup ─────────────────────────────────────────────────────────────────
-function initSetup() {
+// ── Navigation ────────────────────────────────────────────────────────────
+let _navStack = ['s-home'];
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id !== 's-discuss') releaseLock();
+  window.scrollTo(0, 0);
+}
+
+function navigate(id) {
+  _navStack.push(id);
+  history.pushState({ screen: id, stackLen: _navStack.length }, '', '');
+  show(id);
+}
+
+function navBack() {
+  if (_navStack.length > 1) {
+    _navStack.pop();
+    const prev = _navStack[_navStack.length - 1];
+    history.replaceState({ screen: prev, stackLen: _navStack.length }, '', '');
+    if (prev === 's-home') renderHome();
+    show(prev);
+  } else {
+    navHome();
+  }
+}
+
+function navHome() {
+  _navStack = ['s-home'];
+  history.replaceState({ screen: 's-home', stackLen: 1 }, '', '');
+  renderHome();
+  show('s-home');
+}
+
+window.addEventListener('popstate', e => {
+  const id = e.state?.screen;
+  if (!id) { navHome(); return; }
+  if (_navStack.length > 1) _navStack.pop();
+  if (id === 's-home') renderHome();
+  show(id);
+});
+
+// ── Home / library ────────────────────────────────────────────────────────
+function renderHome() {
+  _lib = lsLoad();
+  const list = document.getElementById('home-list');
+  list.replaceChildren();
+
+  if (!_lib.length) {
+    const em = mk('div', 'home-empty');
+    const strong = mk('strong'); strong.textContent = 'No sessions yet';
+    em.append(strong, document.createTextNode('Tap "+ New session" to get started.'));
+    list.appendChild(em);
+    return;
+  }
+
+  _lib.forEach(entry => {
+    const card = mk('div', 'session-card');
+
+    const top  = mk('div', 'session-card-top');
+    const name = mk('div', 'session-card-name'); name.textContent = entry.name || 'Untitled';
+    const badge = mk('span', 'session-card-badge');
+    if (entry.results) {
+      badge.textContent = '✓ Saved'; badge.classList.add('badge-saved');
+    } else if (entry._paused) {
+      badge.textContent = '⏸ Paused'; badge.classList.add('badge-paused');
+    } else {
+      badge.textContent = 'Config'; badge.classList.add('badge-config');
+    }
+    top.append(name, badge);
+
+    const meta = mk('div', 'session-card-meta');
+    const parts = (entry.config?.participants || []);
+    const speakerCount = parts.filter(p => p.role !== 'moderator').length;
+    meta.textContent = fmtT(entry.totalMin * 60) + ' · ' + speakerCount + ' speaker' + (speakerCount !== 1 ? 's' : '') +
+      (entry.savedAt ? ' · ' + fmtDate(entry.savedAt) : '');
+
+    const dots = mk('div', 'session-card-speakers');
+    parts.slice(0, 6).forEach(p => {
+      const chip = mk('span', 'spk-chip');
+      const dot  = mk('span', 'spk-dot'); dot.style.background = p.color;
+      const lbl  = mk('span'); lbl.textContent = p.name;
+      chip.append(dot, lbl); dots.appendChild(chip);
+    });
+    if (parts.length > 6) {
+      const more = mk('span', 'spk-chip'); more.textContent = '+' + (parts.length - 6); dots.appendChild(more);
+    }
+
+    const acts = mk('div', 'session-card-actions');
+    const openBtn = mk('button', 'btn-sm btn-sm-primary');
+    openBtn.textContent = entry.results ? '↺ Reuse' : (entry._paused ? '▶ Resume' : '▶ Open');
+    openBtn.addEventListener('click', e => { e.stopPropagation(); loadConfig(entry); });
+
+    if (entry.results) {
+      const resBtn = mk('button', 'btn-sm btn-sm-results'); resBtn.textContent = 'Results';
+      resBtn.addEventListener('click', e => { e.stopPropagation(); viewResults(entry); });
+      acts.append(openBtn, resBtn);
+    } else {
+      acts.append(openBtn);
+    }
+
+    const delBtn = mk('button', 'btn-sm btn-sm-del'); delBtn.textContent = '✕';
+    let confirmed = false;
+    delBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (confirmed) { deleteEntry(entry.id); return; }
+      confirmed = true; delBtn.textContent = 'Delete?'; delBtn.classList.add('confirm');
+      setTimeout(() => { confirmed = false; delBtn.textContent = '✕'; delBtn.classList.remove('confirm'); }, 2500);
+    });
+    acts.appendChild(delBtn);
+
+    card.addEventListener('click', () => loadConfig(entry));
+    card.append(top, meta, dots, acts);
+    list.appendChild(card);
+  });
+}
+
+// ── New session ───────────────────────────────────────────────────────────
+function newSession() {
   sess.configId = null;
+  sess.isPaused = false;
+  document.getElementById('disc-name').value     = '';
+  document.getElementById('disc-duration').value = '45';
+  document.getElementById('disc-notes').value    = '';
+  document.getElementById('max-speak').value     = '';
   document.getElementById('parts-list').replaceChildren();
   document.getElementById('segs-list').replaceChildren();
-  document.getElementById('disc-notes').value = '';
-  document.getElementById('max-speak').value  = '';
   includePublic = false;
   const pt = document.getElementById('pub-toggle');
   pt.textContent = '+ Include audience'; pt.classList.remove('active');
-  // First participant defaults to moderator
   DEFAULT_PARTICIPANTS.forEach((name, i) => addParticipant(name, SPEAKER_PAL[i], i === 0));
   updateDurInfo();
   updateSetupButtons();
+  navigate('s-setup');
 }
 
+function loadConfig(entry) {
+  sess.configId = entry.id;
+  sess.isPaused = !!entry._paused;
+  document.getElementById('disc-name').value     = entry.name;
+  document.getElementById('disc-duration').value = entry.totalMin;
+  document.getElementById('disc-notes').value    = entry.config?.notes || '';
+  document.getElementById('max-speak').value     = entry.config?.maxSpeakMin || '';
+
+  const pl = document.getElementById('parts-list'); pl.replaceChildren();
+  (entry.config?.participants || []).filter(p => p.role !== 'public').forEach(p => {
+    addParticipant(p.name, p.color, p.role === 'moderator');
+  });
+
+  const hasPub = (entry.config?.participants || []).some(p => p.role === 'public');
+  includePublic = hasPub;
+  const pt = document.getElementById('pub-toggle');
+  pt.textContent = hasPub ? '✓ Audience included' : '+ Include audience';
+  pt.classList.toggle('active', hasPub);
+
+  const sl = document.getElementById('segs-list'); sl.replaceChildren();
+  (entry.config?.segments || []).forEach(s => addSegment(s.name, s.durationMin));
+  updateDurInfo();
+  updateSetupButtons();
+  navigate('s-setup');
+}
+
+// ── Participants & Segments ───────────────────────────────────────────────
 function addParticipant(name = '', color = '', isModerator = false) {
   const list = document.getElementById('parts-list');
   const col  = color || SPEAKER_PAL[list.children.length % SPEAKER_PAL.length];
@@ -498,7 +620,7 @@ function updateDurInfo() {
       'Discussion (' + fmtT(total * 60) + ' − ' + fmtT(segSum * 60) + ')';
     const v = document.getElementById('dur-info-val');
     v.textContent = fmtT(disc * 60);
-    v.style.color = disc <= 0 ? 'var(--red)' : 'var(--text)';
+    v.style.color = disc <= 0 ? 'var(--err)' : 'var(--text)';
   } else {
     el.style.display = 'none';
   }
@@ -517,8 +639,7 @@ function updateSetupButtons() {
   }
 }
 
-// ── Teleprompter — parse notes ────────────────────────────────────────────
-// Supports "## Section title" (Markdown h2) or "N Title" (numbered) as section headers
+// ── Teleprompter ──────────────────────────────────────────────────────────
 function parseNotesSections(text) {
   if (!text.trim()) return [];
   const lines = text.split('\n').map(l => l.trim()).filter(l => l);
@@ -532,7 +653,6 @@ function parseNotesSections(text) {
       cur = { title: mdH ? mdH[1] : numH[2], bullets: [] };
     } else {
       if (!cur) cur = { title: '', bullets: [] };
-      // Strip leading "- " or "* " markdown list markers
       cur.bullets.push(line.replace(/^[-*]\s+/, ''));
     }
   }
@@ -580,7 +700,6 @@ function renderPrompt() {
   const nextBtn = document.getElementById('prompt-next');
   nextBtn.disabled    = idx === total - 1;
   nextBtn.textContent = idx < total - 1 ? 'Next →' : 'Done ✓';
-
   document.getElementById('prompt-panel').querySelector('.prompt-nav').style.display =
     total > 1 ? '' : 'none';
 }
@@ -588,39 +707,7 @@ function renderPrompt() {
 function promptNext() { if (sess.notesIdx < sess.notesSections.length - 1) { sess.notesIdx++; renderPrompt(); } }
 function promptPrev() { if (sess.notesIdx > 0)                             { sess.notesIdx--; renderPrompt(); } }
 
-// ── Save config ───────────────────────────────────────────────────────────
-function saveConfig() {
-  const btn  = document.getElementById('btn-save-config'), orig = btn.textContent;
-  const name = document.getElementById('disc-name').value.trim() || 'Session';
-  const totalMin = parseFloat(document.getElementById('disc-duration').value) || 45;
-  const maxMin   = parseFloat(document.getElementById('max-speak').value) || 0;
-  const notes    = document.getElementById('disc-notes').value.trim();
-  const participants = [];
-  document.getElementById('parts-list').querySelectorAll('.part-row').forEach((row, i) => {
-    const n   = row.querySelector('input').value.trim() || ('Speaker ' + (i + 1));
-    const c   = row.querySelector('.color-dot').dataset.color || SPEAKER_PAL[i % SPEAKER_PAL.length];
-    const mod = row.querySelector('.btn-mod-toggle').classList.contains('active');
-    participants.push({ name: n, color: mod ? MOD_COLOR : c, role: mod ? 'moderator' : 'speaker' });
-  });
-  if (includePublic) participants.push({ name: 'Audience', color: PUB_COLOR, role: 'public' });
-  const segments = [];
-  document.getElementById('segs-list').querySelectorAll('.seg-row').forEach(row => {
-    const inputs = row.querySelectorAll('input');
-    const dur    = parseFloat(inputs[1].value) || 0;
-    if (dur > 0) segments.push({ name: inputs[0].value.trim() || 'Segment', durationMin: dur });
-  });
-  const id = sess.configId || String(Date.now());
-  sess.configId = id;
-  const entry = { id, name, savedAt: new Date().toISOString(), totalMin,
-    config: { participants, segments, notes, maxSpeakMin: maxMin }, results: null };
-  const idx = _lib.findIndex(e => e.id === id);
-  if (idx >= 0) _lib[idx] = entry; else _lib.unshift(entry);
-  lsSave(_lib);
-  btn.textContent = '✓ Saved';
-  setTimeout(() => { btn.textContent = orig; }, 1400);
-}
-
-// ── Start ─────────────────────────────────────────────────────────────────
+// ── Start / Resume / Pause ────────────────────────────────────────────────
 function startDiscussion() {
   const participants = [];
   document.getElementById('parts-list').querySelectorAll('.part-row').forEach((row, i) => {
@@ -654,18 +741,19 @@ function startDiscussion() {
   sess.phaseIdx      = 0;
   sess.activeSpeaker = -1;
   sess.isPaused      = false;
+  sess.notesSections = parseNotesSections(sess.notes);
+  sess.notesIdx      = 0;
 
   const now = performance.now();
   sess.sessionStart = sess.phaseStart = now;
 
   applyDiscussionDOM();
-  show('s-discuss');
+  navigate('s-discuss');
   acquireLock();
   if (sess.raf) cancelAnimationFrame(sess.raf);
   sessTick();
 }
 
-// ── Pause / Resume ────────────────────────────────────────────────────────
 function pauseDiscussion() {
   const now = performance.now();
   if (sess.activeSpeaker >= 0) {
@@ -678,7 +766,7 @@ function pauseDiscussion() {
   sess.isPaused = true;
   sess.pausedAt = now;
   updateSetupButtons();
-  show('s-setup');
+  navBack();
 }
 
 function resumeDiscussion() {
@@ -688,7 +776,7 @@ function resumeDiscussion() {
   sess.phaseStart    += now - sess.pausedAt;
   sess.isPaused       = false;
   updateNobodyBtn();
-  show('s-discuss');
+  navigate('s-discuss');
   acquireLock();
   if (sess.raf) cancelAnimationFrame(sess.raf);
   sessTick();
@@ -697,58 +785,53 @@ function resumeDiscussion() {
 // ── Build discussion DOM ──────────────────────────────────────────────────
 function applyDiscussionDOM() {
   document.getElementById('disc-hd-name').textContent = sess.name;
-  document.getElementById('tt-down').textContent      = fmtT(sess.totalSec);
 
-  sess.notesSections = parseNotesSections(sess.notes);
-  sess.notesIdx = 0;
-  const panel = document.getElementById('prompt-panel');
-  if (sess.notesSections.length) { renderPrompt(); panel.style.display = ''; }
-  else panel.style.display = 'none';
+  const grid   = document.getElementById('spk-grid');
+  const pub    = document.getElementById('pub-container');
+  const pubLbl = document.getElementById('pub-lbl');
+  grid.replaceChildren(); pub.replaceChildren();
 
-  buildSpeakerGrid();
+  const speakers = sess.participants.filter(p => p.role !== 'public');
+  const audience = sess.participants.filter(p => p.role === 'public');
+
+  speakers.forEach(p => {
+    const realIdx = sess.participants.indexOf(p);
+    const card = buildSpeakerCard(p, realIdx);
+    if (p.role === 'moderator') card.classList.add('mod-card');
+    grid.appendChild(card);
+  });
+
+  if (audience.length) {
+    pubLbl.style.display = '';
+    audience.forEach(p => {
+      const realIdx = sess.participants.indexOf(p);
+      pub.appendChild(buildSpeakerCard(p, realIdx));
+    });
+  } else {
+    pubLbl.style.display = 'none';
+  }
+
+  const pp = document.getElementById('prompt-panel');
+  if (sess.notesSections.length) {
+    pp.style.display = '';
+    renderPrompt();
+  } else {
+    pp.style.display = 'none';
+  }
+
   updatePhaseUI();
   updateNobodyBtn();
 }
 
-// ── Speaker grid ──────────────────────────────────────────────────────────
-function buildSpeakerGrid() {
-  const grid   = document.getElementById('spk-grid');
-  const pubCtr = document.getElementById('pub-container');
-  const pubLbl = document.getElementById('pub-lbl');
-  grid.replaceChildren(); pubCtr.replaceChildren();
-
-  const hasPub = sess.participants.some(p => p.role === 'public');
-  pubLbl.style.display = hasPub ? '' : 'none';
-
-  // Moderator first, then speakers, then public below
-  const sorted = [
-    ...sess.participants.filter(p => p.role === 'moderator'),
-    ...sess.participants.filter(p => p.role === 'speaker'),
-  ];
-  sorted.forEach(p => {
-    const i = sess.participants.indexOf(p);
-    grid.appendChild(buildCard(p, i));
-  });
-  sess.participants.filter(p => p.role === 'public').forEach(p => {
-    const i = sess.participants.indexOf(p);
-    pubCtr.appendChild(buildCard(p, i));
-  });
-}
-
-function buildCard(p, i) {
-  const extraCls = p.role === 'moderator' ? ' spk-mod' : p.role === 'public' ? ' spk-pub' : '';
-  const card = mk('div', 'spk-card' + extraCls);
-  card.id = 'spk-' + i;
+function buildSpeakerCard(p, i) {
+  const card = mk('div', 'spk-card'); card.id = 'spk-' + i;
   card.addEventListener('click', () => toggleSpeaker(i));
 
   const hdr  = mk('div', 'spk-hdr');
-  const dot  = mk('span', 'spk-dot');
+  const dot  = mk('span', 'color-dot'); dot.style.background = p.color;
   const name = mk('span', 'spk-name'); name.textContent = p.name;
-  hdr.append(dot);
-  if (p.role === 'moderator') { const tag = mk('span', 'role-tag mod-tag'); tag.textContent = '🎙'; hdr.append(tag); }
-  if (p.role === 'public')    { const tag = mk('span', 'role-tag pub-tag'); tag.textContent = '👥'; hdr.append(tag); }
-  hdr.append(name);
-  const warn = mk('span', 'spk-warn'); warn.id = 'spk-w-' + i; hdr.append(warn);
+  const warn = mk('span', 'spk-warn'); warn.id = 'spk-w-' + i;
+  hdr.append(dot, name, warn);
 
   const time = mk('div', 'spk-time'); time.id = 'spk-t-' + i;
   time.textContent = '0:00'; time.style.color = p.color;
@@ -823,51 +906,51 @@ function sessTick() {
   const phaseRem      = phaseDur - phaseElapsed;
   const sessionRemain = sess.totalSec - totalElapsed;
 
-  // Clock
   const d = new Date();
   const clockStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
   const clockEl = document.getElementById('clock-display');
   if (clockEl.textContent !== clockStr) clockEl.textContent = clockStr;
 
-  // Session elapsed / remaining
   document.getElementById('tt-up').textContent = fmtT(totalElapsed);
   const downEl = document.getElementById('tt-down');
   downEl.textContent = fmt(sessionRemain);
-  downEl.style.color = sessionRemain < 0 ? 'var(--red)' : sessionRemain < 60 ? 'var(--orange)' : 'var(--text)';
+  downEl.style.color = sessionRemain < 0 ? 'var(--err)' : sessionRemain < 60 ? 'var(--warn)' : 'var(--text)';
 
-  // Phase countdown
   const cdEl = document.getElementById('phase-cd');
   cdEl.textContent = fmt(phaseRem);
-  cdEl.style.color = phaseRem < 0 ? 'var(--red)' : phaseRem < 60 ? 'var(--orange)' : 'var(--text)';
+  cdEl.style.color = phaseRem < 0 ? 'var(--err)' : phaseRem < 60 ? 'var(--warn)' : 'var(--text)';
 
-  // Phase bar
   const fillEl = document.getElementById('phase-fill');
   fillEl.style.width      = Math.min(100, phaseElapsed / phaseDur * 100) + '%';
-  fillEl.style.background = phaseRem < 0 ? 'var(--red)' : phaseRem < 60 ? 'var(--orange)' : 'var(--blue)';
+  fillEl.style.background = phaseRem < 0 ? 'var(--err)' : phaseRem < 60 ? 'var(--warn)' : 'var(--accent)';
 
-  // Warning threshold (speakers only, excludes moderator)
-  const speakers     = sess.participants.filter(p => p.role === 'speaker');
-  const expectedEach = speakers.length > 0 && totalElapsed > 20
-    ? totalElapsed / speakers.length : 0;
+  const speakers    = sess.participants.filter(p => p.role === 'speaker');
+  const spkTotal    = speakers.reduce((a, p) => a + p.secs, 0);
+  const avgSecs     = speakers.length > 0 ? spkTotal / speakers.length : 0;
+  const totalTracked = sess.participants.reduce((a, p) => a + p.secs, 0);
 
-  // Speaker cards
   sess.participants.forEach((p, i) => {
-    const live   = p.secs + (sess.activeSpeaker === i ? (now - sess.speakerStart) / 1000 : 0);
-    const pctVal = totalElapsed > 1 ? Math.round(live / totalElapsed * 100) : 0;
-    const barW   = totalElapsed > 1 ? Math.min(100, live / totalElapsed * 100) : 0;
-    document.getElementById('spk-t-' + i).textContent = fmtT(live);
-    document.getElementById('spk-p-' + i).textContent = pctVal + '%';
-    document.getElementById('spk-f-' + i).style.width = barW + '%';
-    if (p.role === 'speaker') {
-      const wEl = document.getElementById('spk-w-' + i);
-      if (sess.maxSpeakSec > 0 && live >= sess.maxSpeakSec) {
-        wEl.textContent = '⏱ Max'; wEl.className = 'spk-warn warn-max';
-      } else if (expectedEach > 0 && live > expectedEach * 1.6) {
-        wEl.textContent = '⬆ A lot'; wEl.className = 'spk-warn warn-high';
-      } else if (expectedEach > 0 && live < expectedEach * 0.4) {
-        wEl.textContent = '⬇ Little'; wEl.className = 'spk-warn warn-low';
+    const liveEl = document.getElementById('spk-t-' + i);
+    if (!liveEl) return;
+    const liveSecs = p.secs + (sess.activeSpeaker === i ? (now - sess.speakerStart) / 1000 : 0);
+    liveEl.textContent = fmtT(liveSecs);
+
+    const fillE = document.getElementById('spk-f-' + i);
+    const pctE  = document.getElementById('spk-p-' + i);
+    const pct   = totalTracked > 0 ? Math.round(liveSecs / totalTracked * 100) : 0;
+    if (fillE) fillE.style.width = pct + '%';
+    if (pctE)  pctE.textContent  = pct + '%';
+
+    const warnEl = document.getElementById('spk-w-' + i);
+    if (warnEl && p.role === 'speaker') {
+      if (sess.maxSpeakSec > 0 && liveSecs >= sess.maxSpeakSec) {
+        warnEl.textContent = '⏱ Max'; warnEl.style.color = 'var(--err)';
+      } else if (avgSecs > 0 && liveSecs > avgSecs * 1.5 && spkTotal > 30) {
+        warnEl.textContent = '⬆ A lot'; warnEl.style.color = 'var(--warn)';
+      } else if (avgSecs > 0 && liveSecs < avgSecs * 0.5 && totalElapsed > 60 && spkTotal > 30) {
+        warnEl.textContent = '⬇ Little'; warnEl.style.color = 'var(--accent)';
       } else {
-        wEl.textContent = ''; wEl.className = 'spk-warn';
+        warnEl.textContent = '';
       }
     }
   });
@@ -875,7 +958,7 @@ function sessTick() {
   sess.raf = requestAnimationFrame(sessTick);
 }
 
-// ── End ───────────────────────────────────────────────────────────────────
+// ── End session ───────────────────────────────────────────────────────────
 function endDiscussion() {
   const now = performance.now();
   if (sess.activeSpeaker >= 0) {
@@ -893,29 +976,67 @@ function endDiscussion() {
     fmtT(Math.round(totalSpeech)) + ' tracked over ' + fmtT(sess.elapsedSec);
   const btn = document.getElementById('btn-save');
   btn.disabled = false; btn.textContent = 'Save results';
-  updateSetupButtons();
-  show('s-summary');
+  navigate('s-summary');
 }
 
-function replayDiscussion() {
-  sess.participants.forEach(p => p.secs = 0);
-  sess.phaseIdx = 0; sess.activeSpeaker = -1; sess.isPaused = false; sess.notesIdx = 0;
-  const now = performance.now();
-  sess.sessionStart = sess.phaseStart = now;
-  applyDiscussionDOM();
-  show('s-discuss'); acquireLock();
-  if (sess.raf) cancelAnimationFrame(sess.raf);
-  sessTick();
+// ── Save session ──────────────────────────────────────────────────────────
+function saveSession() {
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  _lib = lsLoad();
+  const id = sess.configId || String(Date.now());
+  const entry = {
+    id, name: sess.name, savedAt: new Date().toISOString(),
+    totalMin: sess.totalSec / 60,
+    config: {
+      participants: sess.participants.map(p => ({ name: p.name, color: p.color, role: p.role })),
+      segments:     sess.segments.map(s => ({ name: s.name, durationMin: s.durationSec / 60 })),
+      notes: sess.notes, maxSpeakMin: sess.maxSpeakSec / 60,
+    },
+    results: {
+      elapsedSec: Math.round(sess.elapsedSec),
+      speakers:   sess.participants.map(p => ({ name: p.name, color: p.color, role: p.role, secs: Math.round(p.secs) })),
+    },
+  };
+  const idx = _lib.findIndex(e => e.id === id);
+  if (idx >= 0) _lib[idx] = entry; else _lib.unshift(entry);
+  lsSave(_lib);
+  btn.textContent = '✓ Saved';
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────────
+// ── View results ──────────────────────────────────────────────────────────
+function viewResults(entry) {
+  document.getElementById('res-title').textContent = entry.name;
+  document.getElementById('res-sub').textContent   = fmtDate(entry.savedAt) + ' · ' + fmtT(entry.totalMin * 60);
+  if (entry.results?.speakers?.length) {
+    document.getElementById('res-elapsed').textContent = fmtT(entry.results.elapsedSec);
+    const total = entry.results.speakers.reduce((a, p) => a + p.secs, 0);
+    document.getElementById('res-sub2').textContent =
+      fmtT(Math.round(total)) + ' tracked over ' + fmtT(entry.results.elapsedSec);
+    buildStatRows('res-rows', entry.results.speakers, entry.results.elapsedSec);
+  } else {
+    document.getElementById('res-elapsed').textContent = '—';
+    document.getElementById('res-sub2').textContent = 'no results recorded';
+    document.getElementById('res-rows').replaceChildren();
+  }
+  navigate('s-results');
+}
+
+// ── Delete ────────────────────────────────────────────────────────────────
+function deleteEntry(id) {
+  _lib = _lib.filter(e => e.id !== id);
+  lsSave(_lib);
+  renderHome();
+}
+
+// ── Stats builder ─────────────────────────────────────────────────────────
 function buildStatRows(containerId, participants, elapsedSec) {
   const container = document.getElementById(containerId);
   container.replaceChildren();
   const groups = [
-    { label: 'Speakers',   role: 'speaker'   },
-    { label: 'Moderator',  role: 'moderator' },
-    { label: 'Audience',   role: 'public'    },
+    { label: 'Speakers',  role: 'speaker'   },
+    { label: 'Moderator', role: 'moderator' },
+    { label: 'Audience',  role: 'public'    },
   ];
   const total = participants.reduce((a, p) => a + p.secs, 0);
   groups.forEach(({ label, role }) => {
@@ -948,111 +1069,6 @@ document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible' && sess.raf) await acquireLock();
 });
 
-function saveSession() {
-  const btn = document.getElementById('btn-save');
-  btn.disabled = true;
-  const id = sess.configId || String(Date.now());
-  const entry = {
-    id, name: sess.name, savedAt: new Date().toISOString(),
-    totalMin: sess.totalSec / 60,
-    config: {
-      participants: sess.participants.map(p => ({ name: p.name, color: p.color, role: p.role })),
-      segments:     sess.segments.map(s => ({ name: s.name, durationMin: s.durationSec / 60 })),
-      notes: sess.notes, maxSpeakMin: sess.maxSpeakSec / 60,
-    },
-    results: {
-      elapsedSec: Math.round(sess.elapsedSec),
-      speakers:   sess.participants.map(p => ({ name: p.name, color: p.color, role: p.role, secs: Math.round(p.secs) })),
-    },
-  };
-  const idx = _lib.findIndex(e => e.id === id);
-  if (idx >= 0) _lib[idx] = entry; else _lib.unshift(entry);
-  lsSave(_lib);
-  btn.textContent = '✓ Saved';
-}
-
-function openLibrary() {
-  _lib = lsLoad();
-  show('s-library');
-  renderLibrary();
-}
-
-function renderLibrary() {
-  const list = document.getElementById('lib-list');
-  list.replaceChildren();
-  if (!_lib.length) {
-    const p = mk('p', 'lib-empty'); p.textContent = 'No saved sessions.'; list.appendChild(p); return;
-  }
-  _lib.forEach(entry => {
-    const row  = mk('div', 'lib-row');
-    const nm   = mk('div', 'lib-name'); nm.textContent = entry.name;
-    const meta = mk('div', 'lib-meta');
-    const parts = (entry.config?.participants || []).map(p => p.name).join(', ') || '—';
-    meta.textContent = fmtT(entry.totalMin * 60) + ' · ' + fmtDate(entry.savedAt) + ' · ' + parts;
-    const acts    = mk('div', 'lib-acts');
-    const loadBtn = mk('button', 'btn-sm btn-sm-blue'); loadBtn.textContent = 'Load config';
-    loadBtn.addEventListener('click', () => loadConfig(entry));
-    const resBtn  = mk('button', 'btn-sm btn-sm-ghost'); resBtn.textContent = 'Results';
-    resBtn.addEventListener('click', () => viewResults(entry));
-    const delBtn  = mk('button', 'btn-sm btn-sm-del'); delBtn.textContent = '✕';
-    let confirmed = false;
-    delBtn.addEventListener('click', () => {
-      if (confirmed) { deleteEntry(entry.id); return; }
-      confirmed = true; delBtn.textContent = 'Delete?'; delBtn.classList.add('confirm');
-      setTimeout(() => { confirmed = false; delBtn.textContent = '✕'; delBtn.classList.remove('confirm'); }, 2500);
-    });
-    acts.append(loadBtn, resBtn, delBtn);
-    row.append(nm, meta, acts); list.appendChild(row);
-  });
-}
-
-function loadConfig(entry) {
-  sess.configId = entry.id;
-  document.getElementById('disc-name').value     = entry.name;
-  document.getElementById('disc-duration').value = entry.totalMin;
-  document.getElementById('disc-notes').value    = entry.config?.notes || '';
-  document.getElementById('max-speak').value     = entry.config?.maxSpeakMin || '';
-
-  // All participants (including moderator) go into parts-list
-  const pl = document.getElementById('parts-list'); pl.replaceChildren();
-  (entry.config?.participants || []).filter(p => p.role !== 'public').forEach(p => {
-    addParticipant(p.name, p.color, p.role === 'moderator');
-  });
-
-  const hasPub = (entry.config?.participants || []).some(p => p.role === 'public');
-  includePublic = hasPub;
-  const pt = document.getElementById('pub-toggle');
-  pt.textContent = hasPub ? '✓ Audience included' : '+ Include audience';
-  pt.classList.toggle('active', hasPub);
-
-  const sl = document.getElementById('segs-list'); sl.replaceChildren();
-  (entry.config?.segments || []).forEach(s => addSegment(s.name, s.durationMin));
-  updateDurInfo(); show('s-setup');
-}
-
-function viewResults(entry) {
-  document.getElementById('res-title').textContent = entry.name;
-  document.getElementById('res-sub').textContent   = fmtDate(entry.savedAt) + ' · ' + fmtT(entry.totalMin * 60);
-  if (entry.results?.speakers?.length) {
-    document.getElementById('res-elapsed').textContent = fmtT(entry.results.elapsedSec);
-    const total = entry.results.speakers.reduce((a, p) => a + p.secs, 0);
-    document.getElementById('res-sub2').textContent =
-      fmtT(Math.round(total)) + ' tracked over ' + fmtT(entry.results.elapsedSec);
-    buildStatRows('res-rows', entry.results.speakers, entry.results.elapsedSec);
-  } else {
-    document.getElementById('res-elapsed').textContent = '—';
-    document.getElementById('res-sub2').textContent = 'no results recorded';
-    document.getElementById('res-rows').replaceChildren();
-  }
-  show('s-results');
-}
-
-function deleteEntry(id) {
-  _lib = _lib.filter(e => e.id !== id);
-  lsSave(_lib);
-  renderLibrary();
-}
-
 // ── Utilities ─────────────────────────────────────────────────────────────
 function fmtT(secs) {
   secs = Math.max(0, Math.round(secs));
@@ -1067,15 +1083,11 @@ function fmtDate(iso) {
   catch { return ''; }
 }
 function mk(tag, cls) { const el = document.createElement(tag); if (cls) el.className = cls; return el; }
-function show(id) {
-  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if (id !== 's-discuss') releaseLock();
-}
 
 // ── Init ──────────────────────────────────────────────────────────────────
-initSetup();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+history.replaceState({ screen: 's-home', stackLen: 1 }, '', '');
+renderHome();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
 </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 {
-  "name": "Timing Tracker",
-  "short_name": "Timing Tracker",
-  "description": "Moderate live discussions with real-time speaking time tracking per participant",
+  "name": "Debate Timer",
+  "short_name": "Debate Timer",
+  "description": "Track speaking time per participant in live discussions. Manage multiple sessions.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
